@@ -9,12 +9,12 @@ using Startup;
  * TODO:
  * 1. Move sensitive values to .ENV and remove from code base
  * 2. Potentially change to websockets (reddit docs suggest this can be done)
- * 3. If polling is kept, extract rate limit and adjust polling to maximize the polling rate
  */
 public class RedditListener
 {
     private Dictionary<string, RedditPost> _postMap = new();
     private readonly RedditConfig _config;
+    private int _pollRate = 5000;
 
     public RedditListener(RedditConfig config)
     {
@@ -38,7 +38,7 @@ public class RedditListener
         {
             var jokes = await GetNewPostsForSubreddit("jokes", authToken);
             MapPosts(jokes);
-            await Task.Delay(5000, cancellationToken);
+            await Task.Delay(_pollRate, cancellationToken);
         }
     }
 
@@ -83,6 +83,9 @@ public class RedditListener
         requestMessage.Headers.Add("User-Agent", _config.UserAgent);
         
         var response = await client.SendAsync(requestMessage);
+
+        HttpHeaders headers = response.Headers;
+        UpdateRate(headers);
         
         if (response.IsSuccessStatusCode)
         {
@@ -94,5 +97,18 @@ public class RedditListener
         }
         
         throw new HttpRequestException($"Error retrieving posts: {response.StatusCode}");
+    }
+
+    private void UpdateRate(HttpHeaders responseHeaders)
+    {
+        responseHeaders.TryGetValues("x-ratelimit-reset", out IEnumerable<string> rateLimitReset);
+        responseHeaders.TryGetValues("x-ratelimit-remaining", out IEnumerable<string> rateRemaining);
+
+        if (rateLimitReset == null || rateRemaining == null) return;
+        
+        var resetSeconds = double.Parse(rateLimitReset.FirstOrDefault("0"));
+        var remaining = double.Parse(rateRemaining.FirstOrDefault("0"));
+
+        _pollRate = (int)(resetSeconds * 1000 / remaining);
     }
 }
