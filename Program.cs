@@ -9,6 +9,10 @@ builder.Services.AddHttpClient();
 builder.Services.AddMyServices();
 builder.Services.AddHttpLogging(o => { });
 
+var redditSettings = builder.Configuration.GetSection("RedditConfig");
+var redditConfig = redditSettings.Get<RedditConfig>();
+if (redditConfig != null) builder.Services.AddSingleton(redditConfig);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

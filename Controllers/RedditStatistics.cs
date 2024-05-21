@@ -9,9 +9,16 @@ using Services;
 [Route("[controller]")]
 public class RedditStatistics : ControllerBase
 {
+    private readonly RedditStatisticsService _redditStatisticsService;
+
+    public RedditStatistics(RedditStatisticsService redditStatisticsService)
+    {
+        _redditStatisticsService = redditStatisticsService;
+    }
+
     [HttpGet(Name = "GetRedditPosts")]
     public RedditStatisticsResponse Get()
     {
-        return RedditStatisticsService.GetRedditStatistics();
+        return _redditStatisticsService.GetRedditStatistics();
     }
 }

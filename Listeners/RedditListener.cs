@@ -3,29 +3,36 @@
 using System.Net.Http.Headers;
 using System.Text;
 using Responses;
+using Startup;
 
 /*
  * TODO:
  * 1. Move sensitive values to .ENV and remove from code base
- * 2. Use a library for managing polling or change to websockets (reddit docs suggest this can be done)
+ * 2. Potentially change to websockets (reddit docs suggest this can be done)
  * 3. If polling is kept, extract rate limit and adjust polling to maximize the polling rate
  */
-public static class RedditListener
+public class RedditListener
 {
-    private static readonly Dictionary<string, RedditPost> PostMap = new();
-    
-    public static Dictionary<string, RedditPost> GetPostMap()
+    private Dictionary<string, RedditPost> _postMap = new();
+    private readonly RedditConfig _config;
+
+    public RedditListener(RedditConfig config)
     {
-        return PostMap;
+        _config = config;
     }
 
-    public static async Task Poll(CancellationToken cancellationToken)
+    public Dictionary<string, RedditPost> GetPostMap()
+    {
+        return _postMap;
+    }
+
+    public async Task Poll(CancellationToken cancellationToken)
     {
         var authToken = await GetAuthToken();
         await PollReddit(authToken, cancellationToken);
     }
 
-    private static async Task PollReddit(string authToken, CancellationToken cancellationToken)
+    private async Task PollReddit(string authToken, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -35,21 +42,22 @@ public static class RedditListener
         }
     }
 
-    private static void MapPosts(List<RedditPostDataWrapper> wrappedJokes)
+    private void MapPosts(List<RedditPostDataWrapper> wrappedJokes)
     {
-        wrappedJokes.ForEach(wj => PostMap.Add(wj.data.id, wj.data));
+        _postMap = new();
+        wrappedJokes.ForEach(wj => _postMap.TryAdd(wj.data.id, wj.data));
     }
 
-    private static async Task<string> GetAuthToken()
+    private async Task<string> GetAuthToken()
     {
         using var client = new HttpClient();
 
-        var credentialsBase64 = Convert.ToBase64String(Encoding.ASCII.GetBytes("-ZmRQpmvaRS3HqrQhmXfYw:jMnFcby1i0xFHzFGFFilTopu6V8--Q"));
+        var credentialsBase64 = Convert.ToBase64String(Encoding.ASCII.GetBytes(_config.Credentials));
         
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://www.reddit.com/api/v1/access_token?grant_type=client_credentials");
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, _config.AuthUrl);
         requestMessage.Headers.Authorization = 
             new AuthenticationHeaderValue("Basic", credentialsBase64);
-        requestMessage.Headers.Add("User-Agent", "sociallistener v1 (by /u/CurrentDig9909)");
+        requestMessage.Headers.Add("User-Agent", _config.UserAgent);
         
         var tokenResponse = await client.SendAsync(requestMessage);
 
@@ -63,16 +71,16 @@ public static class RedditListener
     }
     
 
-    private static async Task<List<RedditPostDataWrapper>> GetNewPostsForSubreddit(string subreddit, string? token)
+    private async Task<List<RedditPostDataWrapper>> GetNewPostsForSubreddit(string subreddit, string? token)
     {
         using var client = new HttpClient();
         
-        var url = $"https://oauth.reddit.com/r/{subreddit}/new?limit=100";
+        var url = $"{_config.BaseUrl}/r/{subreddit}/new?limit=100";
         
         var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
         requestMessage.Headers.Authorization = 
             new AuthenticationHeaderValue("Bearer", token);
-        requestMessage.Headers.Add("User-Agent", "sociallistener v1 (by /u/CurrentDig9909)");
+        requestMessage.Headers.Add("User-Agent", _config.UserAgent);
         
         var response = await client.SendAsync(requestMessage);
         

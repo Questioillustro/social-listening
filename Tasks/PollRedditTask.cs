@@ -2,17 +2,17 @@
 
 using Listeners;
 
-public class PollRedditTask : IHostedService
+public class PollRedditTask : BackgroundService
 {
-    public Task StartAsync(CancellationToken cancellationToken)
+    private readonly RedditListener _redditListener;
+
+    public PollRedditTask(RedditListener redditListener)
     {
-        RedditListener.Poll(cancellationToken);
-        
-        return Task.CompletedTask;
+        _redditListener = redditListener;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        return Task.CompletedTask;
+        await _redditListener.Poll(stoppingToken);
     }
 }

@@ -3,18 +3,23 @@
 using Listeners;
 using Responses;
 
-/*
- * TODO:
- * 1. Extract to interface
- */
 public class RedditStatisticsService
 {
-    public static RedditStatisticsResponse GetRedditStatistics()
+    private readonly RedditListener _redditListener;
+
+    public RedditStatisticsService(RedditListener redditListener)
     {
-        var posts = RedditListener.GetPostMap();
-        var response = new RedditStatisticsResponse();
-        response.MostUpvotedPost = GetMostUpvoted(posts.Values);
-        response.MostActiveUser = GetMostActiveUser(posts.Values);
+        _redditListener = redditListener;
+    }
+
+    public RedditStatisticsResponse GetRedditStatistics()
+    {
+        var posts = _redditListener.GetPostMap();
+        var response = new RedditStatisticsResponse
+        {
+            MostUpvotedPost = GetMostUpvoted(posts.Values),
+            MostActiveUser = GetMostActiveUser(posts.Values)
+        };
 
         return response;
     }
