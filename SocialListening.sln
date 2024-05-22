@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialListening", "SocialListening.csproj", "{857BEBEC-A685-4C5B-827C-F6D778D77234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialListeningUnitTests", "SocialListeningUnitTests\SocialListeningUnitTests.csproj", "{9AF3CE44-707A-4D55-B420-401E4927AA2A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{857BEBEC-A685-4C5B-827C-F6D778D77234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{857BEBEC-A685-4C5B-827C-F6D778D77234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{857BEBEC-A685-4C5B-827C-F6D778D77234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{857BEBEC-A685-4C5B-827C-F6D778D77234}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AF3CE44-707A-4D55-B420-401E4927AA2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AF3CE44-707A-4D55-B420-401E4927AA2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AF3CE44-707A-4D55-B420-401E4927AA2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AF3CE44-707A-4D55-B420-401E4927AA2A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0757D72B-A0DC-44A6-8746-3D54ABD583FD}
+	EndGlobalSection
+EndGlobal

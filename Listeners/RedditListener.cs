@@ -5,16 +5,14 @@ using System.Text;
 using Responses;
 using Startup;
 
-/*
- * TODO:
- * 1. Move sensitive values to .ENV and remove from code base
- * 2. Potentially change to websockets (reddit docs suggest this can be done)
- */
 public class RedditListener
 {
     private Dictionary<string, RedditPost> _postMap = new();
     private readonly RedditConfig _config;
     private int _pollRate = 5000;
+    private const string RateLimitResetKey = "x-ratelimit-reset";
+    private const string RateLimitRemainingKey = "x-ratelimit-remaining";
+    private const string TargetSubReddit = "jokes";
 
     public RedditListener(RedditConfig config)
     {
@@ -36,7 +34,7 @@ public class RedditListener
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var jokes = await GetNewPostsForSubreddit("jokes", authToken);
+            var jokes = await GetNewPostsForSubreddit(TargetSubReddit, authToken);
             MapPosts(jokes);
             await Task.Delay(_pollRate, cancellationToken);
         }
@@ -101,8 +99,8 @@ public class RedditListener
 
     private void UpdateRate(HttpHeaders responseHeaders)
     {
-        responseHeaders.TryGetValues("x-ratelimit-reset", out IEnumerable<string> rateLimitReset);
-        responseHeaders.TryGetValues("x-ratelimit-remaining", out IEnumerable<string> rateRemaining);
+        responseHeaders.TryGetValues(RateLimitResetKey, out IEnumerable<string> rateLimitReset);
+        responseHeaders.TryGetValues(RateLimitRemainingKey, out IEnumerable<string> rateRemaining);
 
         if (rateLimitReset == null || rateRemaining == null) return;
         
